@@ -271,22 +271,3 @@ class DataGenerator:
         X3 = np.random.normal(10, 1, size=(n_samples - 2 * samples_per_cluster, n_features))
         
         return np.vstack([X1, X2, X3])
-    
-    def get_all_generators(self) -> dict:
-        """Return dictionary of all data generation methods."""
-        return {
-            # Single cluster data
-            'uniform': self.generate_uniform,
-            'uniform_squared': self.generate_uniform_squared,
-            'uniform_cube': self.generate_uniform_cube,
-            'normal': self.generate_normal,
-            'normal_squared': self.generate_normal_squared,
-            'normal_cube': self.generate_normal_cube,
-            'gamma': self.generate_gamma,
-            'gamma_squared': self.generate_gamma_squared,
-            'gamma_cube': self.generate_gamma_cube,
-            # Multi-cluster data
-            'three_uniform': self.generate_three_uniform_clusters,
-            'three_normal': self.generate_three_normal_clusters,
-            'mixed_clusters': self.generate_mixed_clusters,
-        }
