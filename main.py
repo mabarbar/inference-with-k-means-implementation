@@ -22,10 +22,10 @@ def run_experiment(
     data_name: str,
     X_train: np.ndarray,
     X_test: np.ndarray,
-    n_clusters: int = 20,
-    alpha: float = 0.1,
-    beta: float = 0.5,
-    n_iterations: int = 3
+    n_clusters: int = 100,
+    alpha: float = 0.6,
+    beta: float = 0.7,
+    n_iterations: int = 100
 ):
     """
     Run a complete experiment with given data.
@@ -132,11 +132,13 @@ def main():
     # Initialize data generator
     generator = DataGenerator(random_state=42)
     
-    # Configuration
-    n_train = 1000
-    n_test = 200
+    # Configuration - ADJUSTED TO MATCH PAPER (arXiv:2410.17256)
+    # Paper uses: 10,000 training samples, 1,000 test samples
+    # Best hyperparameters: k=300, alpha=0.6, beta=0.07
+    n_train = 10000      # Paper value: 10,000
+    n_test = 1000        # Paper value: 1,000
     n_features = 5
-    n_clusters = 20
+    n_clusters = 300     # Paper's best value: 300
     
     print("=" * 70)
     print("INFERENCE WITH K-MEANS")
@@ -146,27 +148,27 @@ def main():
     # ==================== Experiment 1: Uniform Data ====================
     X_train = generator.generate_uniform_squared(n_train, n_features)
     X_test = generator.generate_uniform_squared(n_test, n_features)
-    run_experiment("Uniform Squared", X_train, X_test, n_clusters)
+    run_experiment("Uniform Squared", X_train, X_test, n_clusters, alpha=0.6, beta=0.07)
     
     # ==================== Experiment 2: Normal Data ====================
     X_train = generator.generate_normal_squared(n_train, n_features)
     X_test = generator.generate_normal_squared(n_test, n_features)
-    run_experiment("Normal Squared", X_train, X_test, n_clusters)
+    run_experiment("Normal Squared", X_train, X_test, n_clusters, alpha=0.6, beta=0.07)
     
     # ==================== Experiment 3: Gamma Data ====================
     X_train = generator.generate_gamma_squared(n_train, n_features)
     X_test = generator.generate_gamma_squared(n_test, n_features)
-    run_experiment("Gamma Squared", X_train, X_test, n_clusters)
+    run_experiment("Gamma Squared", X_train, X_test, n_clusters, alpha=0.6, beta=0.07)
     
     # ==================== Experiment 4: Three Clusters ====================
     X_train = generator.generate_three_normal_clusters(n_train, n_features)
     X_test = generator.generate_three_normal_clusters(n_test, n_features)
-    run_experiment("Three Normal Clusters", X_train, X_test, n_clusters)
+    run_experiment("Three Normal Clusters", X_train, X_test, n_clusters, alpha=0.6, beta=0.07)
     
     # ==================== Experiment 5: Blob Data (2D for visualization) ====================
     X_train, _ = generator.generate_blobs(n_train, 2, n_centers=3)
     X_test, _ = generator.generate_blobs(n_test, 2, n_centers=3)
-    model, _ = run_experiment("Blobs (2D)", X_train, X_test, n_clusters=10)
+    model, _ = run_experiment("Blobs (2D)", X_train, X_test, n_clusters=50, alpha=0.6, beta=0.07)
     
     # Visualize the 2D clustering
     visualize_clustering(model, X_train, "Online Balanced K-means - Blobs")
@@ -180,9 +182,10 @@ def main():
     X_test = generator.generate_normal_squared(n_test, n_features)
     
     cluster_results = {}
-    for k in [5, 10, 20, 50, 100]:
-        model = OnlineBalancedKMeans(n_clusters=k, alpha=0.1, beta=0.5, random_state=42)
-        model.fit(X_train, n_iterations=3)
+    # Paper tested k from 100 to 1000, with k=300 being optimal
+    for k in [100, 150, 200, 250, 300, 400, 500]:
+        model = OnlineBalancedKMeans(n_clusters=k, alpha=0.6, beta=0.07, random_state=42)
+        model.fit(X_train, n_iterations=10)
         results = Evaluator.evaluate_all_methods(model, X_test)
         
         # Get best method MSE
